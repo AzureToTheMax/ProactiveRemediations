@@ -18,14 +18,16 @@
 Version history:
 1.0:
 #>
-
-
-#App name to look for
+#################################################
+#Region Variables
+#App name
 $AppName = "Notepad++"
-#The name of the folder to store logs in inside C:\Windows\DE - avoid spaces
+#The name of the folder to store logs in inside. Feel free to change this. If you do, you may need to adjust line 56.
 $LogFolder = "C:\Windows\AzureToTheMax\Notepad"
 #The name of the log file - avoid spaces
 $LogFile = "Notepad.txt"
+#Endregion
+#################################################
 
 
 #Don't touch this.

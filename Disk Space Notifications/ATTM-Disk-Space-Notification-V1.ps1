@@ -21,12 +21,13 @@ For more information see: https://azuretothemax.net/2024/10/17/automating-disk-s
 Author:      Maxton Allen
 Contact:     @AzureToTheMax
 Website: 	 AzureToTheMax.Net
-Created:     2024-10-12
+Created:     4/2/2025
 Updated:     
 
             
 Version history:
-1 -  2024-10-12 - Creation
+1 - 10/12/2024 - Creation
+2 - 4/2/2025 - Updated from $Mainform.close() to $MainForm.Dispose()
 
 
 #>
@@ -171,7 +172,7 @@ Function Main {
 function button_click {
 	#What our close button does
 	Add-Content "$($LogFileFolder)\$($LogFileName)" "$(get-date): $($env:USERNAME) closing popup." -Force
-	$MainForm.close()
+	$MainForm.Dispose()
 	exit 1 #Exit with a bad status so this device shows a problem in Proactive Remediations report
 }
 
@@ -224,7 +225,7 @@ Function Timer_Over {
 	# this is used to gracefully close the popup if it times out.
 	Add-Content "$($LogFileFolder)\$($LogFileName)" "$(get-date): Popup is timing out." -Force
 	write-error "$(get-date): Popup is timing out." #write this so the info returns to proactive remedation (visible in device detailed run export)
-	$MainForm.close()
+	$MainForm.Dispose()
 	exit 1 #Exit with a bad status so this device shows a problem in Proactive Remediations
 }
 

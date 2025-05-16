@@ -191,7 +191,7 @@ function button2_click {
 	$RebootPromptForm.Close()
 	$RebootPromptForm.Dispose()
 	Add-Content "$($LogFileFolder)\$($LogFileName)" "$(get-date): $($env:USERNAME) has chosen the optional reboot. This unit will reboot in one minute." -Force
-	shutdown /r /t 60 /C "Chosen reboot - This device wil restart in one minute." #Fun fact, this shutdown comment will show in the event log
+	shutdown /r /t 60 /C "Chosen reboot - This device will restart in one minute." #Fun fact, this shutdown comment will show in the event log
 	exit
 }
 
@@ -270,7 +270,7 @@ Function ForcedRebootCountDown_Over {
 	Add-Content "$($LogFileFolder)\$($LogFileName)" "$(get-date): Forced reboot countdown reached. The device will restart in one minute." -Force
 	$RebootPromptForm.Close()
 	$RebootPromptForm.Dispose()
-	shutdown /r /t 60 /C "Forced reboot - This device wil restart in one minute." #Fun fact, this shutdown comment will show in the event log
+	shutdown /r /t 60 /C "Forced reboot - This device will restart in one minute." #Fun fact, this shutdown comment will show in the event log
 	exit 1 #Exit with a bad status so this device shows a problem in Proactive remediation's
 }
 

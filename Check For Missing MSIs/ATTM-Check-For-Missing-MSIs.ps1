@@ -32,7 +32,7 @@ Version history:
 
 
 #Variables
-$Verbose_Logging = $True #Enabled more console logging. Enable this for local testing or running on one device to see detailed status. Disable when deploying via Intune as a PR or your exported output will be mangled.
+$Verbose_Logging = $False #Enabled more console logging. Enable this for local testing or running on one device to see detailed status. Disable when deploying via Intune as a PR or your exported output will be mangled.
 
 
 
@@ -114,4 +114,5 @@ if ($MissingProducts.count -eq 0){
     write-host "Missing MSI's for: $($finalmissingproducts) - Total: $($TotalMissingMSI)"
     exit 1
     }
+
 

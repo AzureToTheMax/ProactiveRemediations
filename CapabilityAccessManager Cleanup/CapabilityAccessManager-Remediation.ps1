@@ -1,14 +1,13 @@
-#Delete "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal" to reset it's size
+#Check size of "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal"
 
 
 <#
 .SYNOPSIS
-This is a script designed to be deployed as an Intune Win32 app which deletes the "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal" to reset it's space consumption.
+This is a script designed to be deployed as an Intune remediation (detection script only) to report back on the size of the "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal" file.
+It will report as failed if the file is over a certain size.
 
 .Description
-This is a script designed to be deployed as an Intune Win32 app which deletes the "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal" to reset it's space consumption.
-Deployment as an app allows employees to self service (or have your help desk control it through a group as available or required).
-It can also be deployed as an Intune remediation. This can then either be a detection-only which is run on demand, or tied to the "CapabilityAccessManager-Detection" for automatic remediation (be careful with your limit!)
+This is a simple file size query and determination of worst size.
 
 See article: https://azuretothemax.net/2026/04/22/out-of-control-capabilityaccessmanager-db-wal-file-size/
 
@@ -24,91 +23,20 @@ Version history:
 
 #>
 
+#Max file size in MB
+#Note, as of writing, the expected size is not yet known. The current median is 550 MB.
+$MaxSize = 1024.00 #leave my decimal points in
 
-function New-HiddenDirectory {
-        #Used to create our storage paths if they do not exist
+#Get the size of the DB file
+$DBSize = "{0:N2}" -f ((Get-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal").Length / 1MB)
 
-        param(
-            [parameter(Mandatory = $true, HelpMessage = "Specify the path to create.")]
-            [ValidateNotNullOrEmpty()]
-            [string]$Path
-        )
-
-        #Only Create our folders if they don't exist to avoid errors
-        if (Test-Path $Path) {
-            write-host "Log File Location folder Folder exists already."
-            } else {
-            New-Item $Path -ItemType Directory -force -ErrorAction SilentlyContinue > $null 
-            $folder = Get-Item "$Path" 
-            $folder.Attributes = 'Directory','Hidden' 
-            }
+#If the size is over $MaxSize MB (default is 1024 MB, or 1 GB), exit with failure. Leave it as gt. PowerShell doesn't like eq, including ge, with decimals apparently, so leave it as gt.
+if($DBSize -gt $MaxSize){
+    #File is over max size
+    write-host "$DBSize" #Note that the write-host lacks anything but the data value (no "MB", etc). When exported, you simply need to know this is in MB. This is done for easy Excel sorting.
+    exit 1
+} else {
+    #File is under max size
+    write-host "$DBSize" #Note that the write-host lacks anything but the data value (no "MB", etc). When exported, you simply need to know this is in MB. This is done for easy Excel sorting.
+    exit 0
 }
-
-
-#Region Configure paths
-    #Storage and cache locations
-	$LogFileParentFolder = "C:\Windows\AzureToTheMax"
-
-	#The folder which will specifically be used for the cache and logging of this specific script. This includes the log file and image.
-	$LogFileFolder = "C:\Windows\AzureToTheMax\CapabilityAccessManager"
-
-	#The log file which will be made by this script. New data is always appending to the existing file.
-	$LogFileName = "CapabilityAccessManager-Cleanup.log"
-
-#Endregion
-
-#Region Create storage paths
-    #Before anything else, including starting logging, our storage paths must exist.
-
-    write-host "Calling for path creation: $($LogFileParentFolder)"
-    New-HiddenDirectory -Path $LogFileParentFolder
-
-    write-host "Calling for path creation: $($LogFileFolder)"
-    New-HiddenDirectory -Path $LogFileFolder
-
-#Endregion
-
-
-#Start logging
-
-Add-Content "$($LogFileFolder)\$($LogFileName)" "
-
-$((Get-Date).ToUniversalTime()): CapabilityAccessManager cleanup running on $($env:COMPUTERNAME)" -Force
-
-#Check current size
-$DBSizeStart = "{0:N2}" -f ((Get-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal").Length / 1MB)
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Current CapabilityAccessManager.DB-wal size: $($DBSizeStart) MB"
-
-#Cleanup script
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'Capability Access Manager Service'"
-$id = Get-WmiObject -Class Win32_Service -Filter "Name='camsvc'" | Select-Object -ExpandProperty ProcessId
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Found service with process id: $id"
-$process = Get-Process -Id $id
-Stop-Process $process.Id -Force -Verbose
-Start-Sleep 5 -Verbose
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'SuperFetch (SysMain) Service'"
-$id = Get-WmiObject -Class Win32_Service -Filter "Name='SysMain'" | Select-Object -ExpandProperty ProcessId
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Found service with process id: $id"
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'Geolocation Service'"
-$id = Get-WmiObject -Class Win32_Service -Filter "Name='lfsvc'" | Select-Object -ExpandProperty ProcessId
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Found service with process id: $id"
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Delete the large files from: 'C:\ProgramData\Microsoft\Windows\CapabilityAccessManager'"
-Remove-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\*"
-Start-Sleep 5 -Verbose
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Re-start the 'Capability Access Manager Service'"
-Start-Service -Name "camsvc"
-Start-Sleep 5 -Verbose
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Re-start the 'SuperFetch (SysMain) Service'"
-Start-Service -Name "SysMain"
-Start-Sleep 5 -Verbose
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Re-start the 'Geolocation Service'"
-Start-Service -Name "lfsvc"
-Start-Sleep 5 -Verbose
-
-#Check final size
-start-sleep -Seconds 10
-$DBSizeEnd = "{0:N2}" -f ((Get-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal").Length / 1MB)
-$SavedSpace = $DBSizeStart - $DBSizeEnd
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Final CapabilityAccessManager.DB-wal size: $($DBSizeEnd) MB"
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Space reclaimed: $($SavedSpace) MB"
-Write-Host "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Initial CapabilityAccessManager.DB-wal size: $($DBSizeStart) MB. Final CapabilityAccessManager.DB-wal size: $($DBSizeEnd) MB. Space reclaimed: $($SavedSpace) MB."

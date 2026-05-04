@@ -82,6 +82,7 @@ Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime())
 
 #Disable the CAM service (can be done while still running)
 set-service -name "camsvc"  -StartupType Disabled
+Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Disable the 'Capability Access Manager Service'"
 
 #kill the CAM service (better done by killing the process over trying to stop the service which doens't like to work)
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'Capability Access Manager Service'"
@@ -105,6 +106,8 @@ Remove-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\*"
 
 #enable the CAM serivce
 set-service -name "camsvc"  -StartupType automatic
+Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Enable the 'Capability Access Manager Service'"
+
 
 #start services
 Start-Sleep 5 -Verbose

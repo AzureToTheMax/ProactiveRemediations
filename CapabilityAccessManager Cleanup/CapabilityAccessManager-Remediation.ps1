@@ -21,6 +21,7 @@ Updated:
             
 Version history:
 1 -  4/22/2026 - Initial public release of script.
+1.1 - 5/4/2026 - Added service disable and renable, better clarified script steps.
 
 #>
 
@@ -70,7 +71,6 @@ function New-HiddenDirectory {
 
 
 #Start logging
-
 Add-Content "$($LogFileFolder)\$($LogFileName)" "
 
 $((Get-Date).ToUniversalTime()): CapabilityAccessManager cleanup running on $($env:COMPUTERNAME)" -Force
@@ -79,12 +79,18 @@ $((Get-Date).ToUniversalTime()): CapabilityAccessManager cleanup running on $($e
 $DBSizeStart = "{0:N2}" -f ((Get-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.DB-wal").Length / 1MB)
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Current CapabilityAccessManager.DB-wal size: $($DBSizeStart) MB"
 
-#Cleanup script
+
+#Disable the CAM service (can be done while still running)
+set-service -name "camsvc"  -StartupType Disabled
+
+#kill the CAM service (better done by killing the process over trying to stop the service which doens't like to work)
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'Capability Access Manager Service'"
 $id = Get-WmiObject -Class Win32_Service -Filter "Name='camsvc'" | Select-Object -ExpandProperty ProcessId
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Found service with process id: $id"
 $process = Get-Process -Id $id
 Stop-Process $process.Id -Force -Verbose
+
+#Log (but not kill) the other services
 Start-Sleep 5 -Verbose
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'SuperFetch (SysMain) Service'"
 $id = Get-WmiObject -Class Win32_Service -Filter "Name='SysMain'" | Select-Object -ExpandProperty ProcessId
@@ -92,8 +98,15 @@ Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime())
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Stop the 'Geolocation Service'"
 $id = Get-WmiObject -Class Win32_Service -Filter "Name='lfsvc'" | Select-Object -ExpandProperty ProcessId
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Found service with process id: $id"
+
+#Delete the files
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Delete the large files from: 'C:\ProgramData\Microsoft\Windows\CapabilityAccessManager'"
 Remove-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\*"
+
+#enable the CAM serivce
+set-service -name "camsvc"  -StartupType automatic
+
+#start services
 Start-Sleep 5 -Verbose
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Re-start the 'Capability Access Manager Service'"
 Start-Service -Name "camsvc"

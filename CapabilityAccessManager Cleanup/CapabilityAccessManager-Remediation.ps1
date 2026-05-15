@@ -10,6 +10,8 @@ This is a script designed to be deployed as an Intune Win32 app which deletes th
 Deployment as an app allows employees to self service (or have your help desk control it through a group as available or required).
 It can also be deployed as an Intune remediation. This can then either be a detection-only which is run on demand, or tied to the "CapabilityAccessManager-Detection" for automatic remediation (be careful with your limit!)
 
+Credit to jsmorley on the Rainmeter forumn for the original script https://forum.rainmeter.net/viewtopic.php?t=45197
+
 See article: https://azuretothemax.net/2026/04/22/out-of-control-capabilityaccessmanager-db-wal-file-size/
 
 .NOTES

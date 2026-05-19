@@ -10,8 +10,6 @@ This is a script designed to be deployed as an Intune Win32 app which deletes th
 Deployment as an app allows employees to self service (or have your help desk control it through a group as available or required).
 It can also be deployed as an Intune remediation. This can then either be a detection-only which is run on demand, or tied to the "CapabilityAccessManager-Detection" for automatic remediation (be careful with your limit!)
 
-Credit to jsmorley on the Rainmeter forumn for the original script https://forum.rainmeter.net/viewtopic.php?t=45197
-
 See article: https://azuretothemax.net/2026/04/22/out-of-control-capabilityaccessmanager-db-wal-file-size/
 
 .NOTES
@@ -23,7 +21,8 @@ Updated:
             
 Version history:
 1 -  4/22/2026 - Initial public release of script.
-1.1 - 5/4/2026 - Added service disable and renable, better clarified script steps.
+1.1 - 5/4/2026 - Added service disable and re-enable, better clarified script steps.
+1.2 - 5/18/2026 - Updated to latest Microsoft recommendation (Delete only the CapabilityAccessManager.db-wal file and no other files)
 
 #>
 
@@ -103,13 +102,12 @@ $id = Get-WmiObject -Class Win32_Service -Filter "Name='lfsvc'" | Select-Object 
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Found service with process id: $id"
 
 #Delete the files
-Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Delete the large files from: 'C:\ProgramData\Microsoft\Windows\CapabilityAccessManager'"
-Remove-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\*"
+Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Deleting 'C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.db-wal'"
+Remove-Item "C:\ProgramData\Microsoft\Windows\CapabilityAccessManager\CapabilityAccessManager.db-wal" -Force
 
 #enable the CAM serivce
 set-service -name "camsvc"  -StartupType automatic
 Add-Content "$($LogFileFolder)\$($LogFileName)" "$((Get-Date).ToUniversalTime()): Enable the 'Capability Access Manager Service'"
-
 
 #start services
 Start-Sleep 5 -Verbose

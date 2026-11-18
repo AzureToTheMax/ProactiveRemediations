@@ -2,14 +2,14 @@
 
 <#
 .SYNOPSIS
-This script checks for Patch My PC packages which have duplicated (orphaned, unassigned *copies* of apps).
+This script checks for Patch My PC packages that have duplicated (orphaned, unassigned *copies* of apps).
 This is not the same as single apps that didn't get assigned.
 This is intended for use with PMP cloud and supports multiple tenants.
 
 .Description
-To achieve this we...
+To achieve this, we...
 
-1) Build a list of tenants to auth to (this is MSP friendly).
+1) Build a list of tenants to auth to (this is MSP-friendly).
 2) Cycle through every tenant and pull managed apps from Intune.
 3) Cycle through each app and...
     A) Confirm it is from PMP
@@ -49,7 +49,7 @@ $Tenant2 = $true
 $TenantArray = @()
 
 #Establish our list of tenants to cycle through and means of authing to them.
-#Just copy paste as many tenants as you need and fill out each one accordingly.
+#Just copy-paste as many tenants as you need and fill out each one accordingly.
 
 #Tenant1
 if($Tenant1 -eq $true){

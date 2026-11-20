@@ -27,7 +27,8 @@ Updated:
 
             
 Version history:
-1 -  11/18/26 - Initial public release of script.
+1 - 11/18/26 - Initial public release of script.
+2 - 11/19/26 - Added PMP Company ID and Microsoft Tenant ID fields/columns for the sake of helping PMP Tickets. 
 
 #>
 
@@ -56,7 +57,8 @@ if($Tenant1 -eq $true){
 $TenantTempArray = New-Object System.Object
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "ApplicationClientId" -Value 'Tenant1-App-ID'
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "ApplicationClientSecret" -Value $env:Tenant1Secret
-$TenantTempArray | Add-Member -MemberType NoteProperty -Name "TenantId" -Value 'Tenant1-ID'
+$TenantTempArray | Add-Member -MemberType NoteProperty -Name "TenantId" -Value 'Tenant1-ID' #The Microsoft tenant ID
+$TenantTempArray | Add-Member -MemberType NoteProperty -Name "PMPCompanyID" -Value 'Tenant1-PMP-ID' #PMP, settings, company ID. Useful on PMP tickets.
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "TenantName" -Value "Tenant-1-ID"
 $TenantArray += $TenantTempArray 
 }
@@ -67,6 +69,7 @@ $TenantTempArray = New-Object System.Object
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "ApplicationClientId" -Value 'Tenant2-App-ID'
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "ApplicationClientSecret" -Value $env:Tenant2Secret
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "TenantId" -Value 'Tenant2-ID'
+$TenantTempArray | Add-Member -MemberType NoteProperty -Name "PMPCompanyID" -Value 'Tenant2-PMP-ID' #PMP, settings, company ID. Useful on PMP tickets.
 $TenantTempArray | Add-Member -MemberType NoteProperty -Name "TenantName" -Value "Tenant-2-ID"
 $TenantArray += $TenantTempArray 
 }
@@ -150,6 +153,8 @@ catch {
             $TempArray = $null
             $TempArray = New-Object System.Object
             $TempArray | Add-Member -MemberType NoteProperty -Name "Tenant" -Value "$($tenant.TenantName)"
+            $TempArray | Add-Member -MemberType NoteProperty -Name "MTenantID" -Value "$($tenant.TenantId)"
+            $TempArray | Add-Member -MemberType NoteProperty -Name "PMPCompanyID" -Value "$($tenant.PMPCompanyID)"
             $TempArray | Add-Member -MemberType NoteProperty -Name "App Name" -Value "$($app.Name)"
             $TempArray | Add-Member -MemberType NoteProperty -Name "Count" -Value "$($app.Count)"
             $TempArray | Add-Member -MemberType NoteProperty -Name "Publish Dates" -Value "$($app.group.createdDateTime)"
